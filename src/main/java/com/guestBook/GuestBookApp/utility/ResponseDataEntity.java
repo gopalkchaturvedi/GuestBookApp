@@ -8,6 +8,8 @@ package com.guestBook.GuestBookApp.utility;
 import java.util.Collections;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ResponseDataEntity<T> {
 
 	private Object data;
