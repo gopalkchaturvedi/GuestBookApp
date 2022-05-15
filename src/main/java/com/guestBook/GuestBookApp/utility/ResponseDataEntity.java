@@ -1,8 +1,3 @@
-/*
- * File: ResponseDataEntity.java
- * Description: Api Response Data Entity
- * Author: DvayWeb
-*/
 package com.guestBook.GuestBookApp.utility;
 
 import java.util.Collections;

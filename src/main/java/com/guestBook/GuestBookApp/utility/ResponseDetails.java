@@ -1,8 +1,3 @@
-/*
- * File: ResponseDetails.java
- * Description: Response Details
- * Author: DvayWeb
-*/
 package com.guestBook.GuestBookApp.utility;
 
 import java.util.Hashtable;

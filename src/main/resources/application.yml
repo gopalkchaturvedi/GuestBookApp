@@ -5,7 +5,7 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     password: Password1234
-    url: jdbc:mysql://localhost:3306/user-feedback 
+    url: jdbc:mysql://localhost:3306/guestbookdb 
     username: root
 
 spring.jpa:
@@ -19,3 +19,18 @@ spring.jpa:
 logging:
   pattern: 
     console: "%d{yyyy-MM-dd HH:mm:ss} ${LOG_LEVEL_PATTERN:-%5p} %m%n"      
+
+security:
+    oauth2:
+      client:
+        clientId: guest-book
+        clientSecret: spring-security-oauth2-read-client-password1234
+        ##accessTokenUri: http://127.0.0.1:8080/login
+        accessTokenUri: http://localhost:8080/login
+        grant-type: password
+        scope: read+write 
+ 
+guestbook:
+    auth-server: http://127.0.0.1:8080/auth
+    client-id: guest-book
+    client-secret: spring-security-oauth2-read-client-password1234

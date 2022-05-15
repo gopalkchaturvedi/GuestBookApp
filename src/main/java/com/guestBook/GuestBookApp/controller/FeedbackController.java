@@ -1,9 +1,19 @@
 package com.guestBook.GuestBookApp.controller;
 
+import java.io.ByteArrayOutputStream;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -13,12 +23,11 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.guestBook.GuestBookApp.model.User;
+import com.guestBook.GuestBookApp.model.UserDetailsDTO;
 import com.guestBook.GuestBookApp.model.UserEntries;
 import com.guestBook.GuestBookApp.service.UserService;
 import com.guestBook.GuestBookApp.utility.ResponseDataEntity;
 import com.guestBook.GuestBookApp.utility.ResponseDetails;
-
-import java.util.List;
 
 @RestController
 public class FeedbackController {
@@ -27,14 +36,18 @@ public class FeedbackController {
 	
 	@Autowired
 	UserService userService;
+	@Autowired
+	UserDetailsService	userDetailsService;
 	
-		
-	@PostMapping("/register")
+	@Autowired
+	private PasswordEncoder userPasswordEncoder;
+	
+	@PostMapping("open/register")
 	public ResponseDataEntity<?> getRegister(@RequestBody User user) {
 		logger.info("registering user");
 		User _user=null;;
 		try {
-			user.setUserRole("user");
+			
 			 _user=userService.registerUser(user);
 		}catch(Exception e) {
 			logger.error("error while registering user"+e.getStackTrace());
@@ -42,15 +55,27 @@ public class FeedbackController {
 		}
 		return new ResponseDataEntity<>(_user, ResponseDetails.SUCCESS);
 	}
+	/*@PostMapping(value="/open/login", consumes = MediaType.ALL_VALUE)
+	public ResponseEntity<LoginRespose> login(@RequestParam Map<String, String> map) throws Exception {
+		logger.info("login api get called");
+		LoginResDTO login = userService.login(map);
+		if(login==null) {
+			LoginErrorDTO error = new LoginErrorDTO("failure", "Please enter correct username/password.");
+			return ResponseEntity.status(HttpStatus.SC_BAD_REQUEST).body(error);
+		}
+		return ResponseEntity.ok(login);
+	}*/
+	
 	@GetMapping("/login")
 	public ResponseDataEntity<?> signIn(@RequestParam("username") String username,@RequestParam("password") String password) {
 		
 		logger.info("sign in user");
 		try {
-			if(userService.login(username,password))
-				return new ResponseDataEntity<>("Found", ResponseDetails.SUCCESS);
+			User usr=userService.login(username,password);
+			if(usr!=null)
+				return new ResponseDataEntity<>(usr, "found",ResponseDetails.SUCCESS);
 			else
-				return new ResponseDataEntity<>("Not Found", ResponseDetails.NOT_FOUND);
+				return new ResponseDataEntity<>(null,"Not Found", ResponseDetails.NOT_FOUND);
 		}catch(Exception e) {
 			logger.error("error while login user"+e.getStackTrace());
 			return new ResponseDataEntity<>(null, e.getMessage(), ResponseDetails.ERROR);
@@ -58,6 +83,35 @@ public class FeedbackController {
 		}
 		
 	}
+	
+	
+	@PreAuthorize("hasAnyRole('ADMIN')")
+	@PostMapping("/secured/login")
+	public ResponseDataEntity<?> securedSignIn(@RequestParam("username") String username,@RequestParam("password") String password) {
+		
+		logger.info("sign in user"+username);
+		logger.info("password"+password);
+		
+		try {
+			
+			UserDetailsDTO usr=(UserDetailsDTO) userDetailsService.loadUserByUsername(username);
+			//System.out.println("matched "+userPasswordEncoder.matches(password, usr.getPassword()));
+			logger.info("sign in user"+usr.getUserName()+" role "+usr.getUserRole());
+			if(usr!=null) {
+				if(userPasswordEncoder.matches(password, usr.getPassword()))
+				return new ResponseDataEntity<>(usr, "found",ResponseDetails.SUCCESS);
+				else
+				return new ResponseDataEntity<>(null,"Incorrect password ", ResponseDetails.NOT_FOUND);
+			}
+			else
+				return new ResponseDataEntity<>(null,"user does not exists ", ResponseDetails.NOT_FOUND);
+		}catch(Exception e) {
+			logger.error("error while login user"+e.getStackTrace());
+			return new ResponseDataEntity<>(null, e.getMessage(), ResponseDetails.ERROR);
+			 
+		}
+	}
+	
 	
 	@PostMapping("/createEntries")
 	public ResponseDataEntity<?> createEntries(@RequestBody UserEntries userEntries) {
@@ -107,7 +161,6 @@ public class FeedbackController {
 				
 				
 		}catch(Exception e) {
-			e.printStackTrace();
 			logger.error("error while getting list of entries"+e.getStackTrace());
 			return new ResponseDataEntity<>(_userEntries, ResponseDetails.ERROR);
 		}
@@ -128,36 +181,36 @@ public class FeedbackController {
 				
 				
 		}catch(Exception e) {
-			e.printStackTrace();
 			logger.error("error while getting list of entries"+e.getStackTrace());
 			return new ResponseDataEntity<>(_userEntries, ResponseDetails.ERROR);
 		}
 	}
 	
-	@GetMapping("/getEntriesList")
-	public ResponseDataEntity<?> getEntriesList() {
+	@GetMapping("/secured/getEntriesList")
+	public ResponseDataEntity<?> getEntriesList(@RequestParam("id") int id) {
 		logger.info("getting user entries data ");
 		List <UserEntries>_userEntries=null;;
 		try {
-			
-			_userEntries=userService.getEntriesList();
-			if(_userEntries!=null)
-				return new ResponseDataEntity<>(_userEntries, ResponseDetails.SUCCESS);
+			_userEntries=userService.getEntriesList(id);
+			logger.info("getting user entries data "+_userEntries.size());
+			if(_userEntries.size()>0)
+				return new ResponseDataEntity<>(_userEntries,"Success", ResponseDetails.SUCCESS);
 			else
-				return new ResponseDataEntity<>(null, ResponseDetails.NOT_FOUND);
+				return new ResponseDataEntity<>(null,"No Record Found", ResponseDetails.NOT_FOUND);
 		}catch(Exception e) {
-			e.printStackTrace();
 			logger.error("error while getting list of entries"+e.getStackTrace());
 			return new ResponseDataEntity<>(_userEntries, ResponseDetails.ERROR);
 		}
 		
 	}
-	@PutMapping("/updateEntries")
+	@PutMapping("/open/updateEntries")
 	public ResponseDataEntity<?> updateEntries(@RequestBody UserEntries userEntries) {
 		logger.info("updating Entries ");
 		UserEntries _userEntries=null;;
 		try {
-			
+			logger.info(" id for update  "+userEntries.getId());
+			System.out.println("id for update  "+userEntries.getId());
+		
 			_userEntries=userService.update(userEntries);
 			if(_userEntries!=null)
 				return new ResponseDataEntity<>(_userEntries, ResponseDetails.SUCCESS);
@@ -199,7 +252,6 @@ public class FeedbackController {
 	public ResponseDataEntity<?> storeFile(@RequestParam("file") MultipartFile file) {
 		try {
 			String fileName = userService.storeFile(file);
-
 			logger.info("storeFile : success");
 			return new ResponseDataEntity<>(fileName, ResponseDetails.SUCCESS);
 
@@ -209,5 +261,61 @@ public class FeedbackController {
 		}
 
 	}
+
+	@PostMapping("/storeFileData")
+	public ResponseDataEntity<?> storeFile(@RequestParam("file") MultipartFile file,@RequestParam("userId") int userId) {
+		try {
+			UserEntries userEntries=userService.storeFile(file,userId);
+
+			logger.info("storeFile : success");
+			if (userEntries!=null)
+			return new ResponseDataEntity<>(userEntries.getFilename(),userEntries.getFilename() +"file uploaded successfully", ResponseDetails.SUCCESS);
+			else
+			return new ResponseDataEntity<>(null,"error while file uploadeding", ResponseDetails.ERROR);
+				
+		} catch (Exception e) {
+			logger.error("storeFile : error : {}", e.getMessage());
+			return new ResponseDataEntity<>(null, e.getMessage(), ResponseDetails.ERROR);
+		}
+
+	}
 	
+	@PutMapping("/updateStoreFileData")
+	public ResponseDataEntity<?> updateStoreFileData(@RequestParam("file") MultipartFile file,@RequestParam("userId") int userId,@RequestParam("Id") long Id) {
+		try {	
+			logger.info("storeFile : success");
+			if (userService.updateFileData(file,userId,Id))
+			{	userService.delete(Id);
+			return new ResponseDataEntity<>("upoaded","file uploaded successfully", ResponseDetails.SUCCESS);
+			}else {
+			return new ResponseDataEntity<>(null,"error while file uploadeding", ResponseDetails.ERROR);
+			}
+		} catch (Exception e) {
+			logger.error("storeFile : error : {}", e.getMessage());
+			return new ResponseDataEntity<>(null, e.getMessage(), ResponseDetails.ERROR);
+		}
+
+	}
+
+
+	@PostMapping("/downLoadfile")
+	public ResponseEntity<?> downLoadfile(@RequestBody long id) {
+		System.out.println("getting data for "+id);
+	    UserEntries userEntries = userService.getSelectedEntry(id);
+	    System.out.println(userEntries.getId()+" file name "+userEntries.getFilename()+"filedata Size"+userEntries.getFiledata().length);
+	    //ByteArrayOutputStream fileData=new ByteArrayOutputStream();
+	    ByteArrayOutputStream baos = new ByteArrayOutputStream(userEntries.getFiledata().length);
+	    baos.write(userEntries.getFiledata(), 0, userEntries.getFiledata().length);
+	    HttpHeaders header = new HttpHeaders();
+        header.setContentType(new MediaType("application", "force-download"));
+        header.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename="+userEntries.getFilename());
+        return new ResponseEntity<>(new ByteArrayResource(baos.toByteArray()),
+                header, HttpStatus.CREATED);
+        
+        /*
+	    return ResponseEntity.ok()
+	        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + userEntries.getFilename() + "\"")
+	        .body(userEntries.getFiledata());
+	        */
+	  }
 }

@@ -1,9 +1,15 @@
 package com.guestBook.GuestBookApp.model;
 
+import java.util.Set;
+
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.OneToMany;
 
 @Entity
 public class User {
@@ -13,9 +19,37 @@ public class User {
 	private String userName;
 	private String password;
 	private String userRole;
+	
+		
+	/*
+	@OneToMany(fetch = FetchType.EAGER)
+	@JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "id", referencedColumnName = "ID"), inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "roleId"))
+	private Set<Role> role;
+	
+	
+	
+	public Set<Role> getRole() {
+		return role;
+	}
+	public void setRole(Set<Role> role) {
+		this.role = role;
+	}*/
+	
+	
 	public User() {
-		super();
-		// TODO Auto-generated constructor stub
+		
+	}
+	public String getUserRole() {
+		return userRole;
+	}
+	public void setUserRole(String userRole) {
+		this.userRole = userRole;
+	}
+	public User(User user) {
+		this.userName=user.getUserName();
+		this.password=user.getPassword();
+		this.userRole=user.getUserRole();
+		this.id=user.getId();
 	}
 	public long getId() {
 		return id;
@@ -35,18 +69,6 @@ public class User {
 	public void setPassword(String password) {
 		this.password = password;
 	}
-	public String getUserRole() {
-		return userRole;
-	}
-	public void setUserRole(String userRole) {
-		this.userRole = userRole;
-	}
-	
-	
-	
-	
-	
-	
-	
 
+		
 }

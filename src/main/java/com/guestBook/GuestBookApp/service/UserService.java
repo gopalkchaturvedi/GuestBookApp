@@ -1,17 +1,18 @@
 package com.guestBook.GuestBookApp.service;
 
-import com.guestBook.GuestBookApp.model.User;
-import com.guestBook.GuestBookApp.model.UserEntries;
-
+import java.io.IOException;
 import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
+
+import com.guestBook.GuestBookApp.model.User;
+import com.guestBook.GuestBookApp.model.UserEntries;
 
 public interface UserService {
 
 	User registerUser(User user);
 
-	boolean login(String username,String password);
+	User login(String username,String password);
 
 	UserEntries createEntries(UserEntries userEntries);
 
@@ -22,10 +23,17 @@ public interface UserService {
 	boolean delete(long id);
 	boolean approve(long id);
 
-	List<UserEntries> getEntriesList();
+	List<UserEntries> getEntriesList(int id);
 
 	UserEntries getSelectedEntry(long id);
 
 	String storeFile(MultipartFile file);
+	UserEntries storeFile(MultipartFile file,int userId) throws IOException;
+
+	
+
+	boolean updateFileData(MultipartFile file, int userId, long id)throws IOException;
+
+	//LoginResDTO login(Map<String, String> map);
 
 }

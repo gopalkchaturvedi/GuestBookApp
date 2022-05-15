@@ -35,7 +35,7 @@ class GuestBookAppApplicationTests {
 		user.setId(4L);
 		user.setUserName("testUser");
 		user.setPassword("testUser");
-		user.setUserRole("user");
+		//user.setUserRole("user");
 		userRepo.save(user);
 		assertNotNull(userRepo.findByUsernamePassword("testUser", "testUser"));
 		
