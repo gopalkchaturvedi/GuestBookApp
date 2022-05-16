@@ -21,21 +21,7 @@ public class User {
 	private String userRole;
 	
 		
-	/*
-	@OneToMany(fetch = FetchType.EAGER)
-	@JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "id", referencedColumnName = "ID"), inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "roleId"))
-	private Set<Role> role;
-	
-	
-	
-	public Set<Role> getRole() {
-		return role;
-	}
-	public void setRole(Set<Role> role) {
-		this.role = role;
-	}*/
-	
-	
+			
 	public User() {
 		
 	}

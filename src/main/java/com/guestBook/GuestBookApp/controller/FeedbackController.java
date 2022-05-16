@@ -55,16 +55,7 @@ public class FeedbackController {
 		}
 		return new ResponseDataEntity<>(_user, ResponseDetails.SUCCESS);
 	}
-	/*@PostMapping(value="/open/login", consumes = MediaType.ALL_VALUE)
-	public ResponseEntity<LoginRespose> login(@RequestParam Map<String, String> map) throws Exception {
-		logger.info("login api get called");
-		LoginResDTO login = userService.login(map);
-		if(login==null) {
-			LoginErrorDTO error = new LoginErrorDTO("failure", "Please enter correct username/password.");
-			return ResponseEntity.status(HttpStatus.SC_BAD_REQUEST).body(error);
-		}
-		return ResponseEntity.ok(login);
-	}*/
+	
 	
 	@GetMapping("/login")
 	public ResponseDataEntity<?> signIn(@RequestParam("username") String username,@RequestParam("password") String password) {
@@ -285,7 +276,7 @@ public class FeedbackController {
 		try {	
 			logger.info("storeFile : success");
 			if (userService.updateFileData(file,userId,Id))
-			{	userService.delete(Id);
+			{	
 			return new ResponseDataEntity<>("upoaded","file uploaded successfully", ResponseDetails.SUCCESS);
 			}else {
 			return new ResponseDataEntity<>(null,"error while file uploadeding", ResponseDetails.ERROR);

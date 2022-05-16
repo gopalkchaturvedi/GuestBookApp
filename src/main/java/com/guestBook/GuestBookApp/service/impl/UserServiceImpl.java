@@ -24,7 +24,6 @@ import com.guestBook.GuestBookApp.model.UserEntries;
 import com.guestBook.GuestBookApp.repository.UserEntriesRepository;
 import com.guestBook.GuestBookApp.repository.UserRepository;
 import com.guestBook.GuestBookApp.service.UserService;
-import com.guestBook.GuestBookApp.utility.CustomProperties;
 
 @Service
 public class UserServiceImpl implements UserDetailsService, UserService {
@@ -39,8 +38,7 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 	@Autowired
 	private PasswordEncoder userPasswordEncoder;
 	
-	@Autowired
-	private CustomProperties cusProperties;
+	
 	
 	private Path fileStorageLocation;
 	
@@ -204,7 +202,6 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 	@Override
 	public boolean updateFileData(MultipartFile file, int userId, long Id)throws IOException {
 		java.util.Optional<UserEntries> opt=userEntriesRepository.findById(Id);
-		System.out.println("id "+Id);
 		UserEntries _userEntries=null;
 		boolean status=false;
 		if(opt.isPresent())
