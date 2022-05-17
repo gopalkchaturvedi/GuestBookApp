@@ -174,7 +174,7 @@ let AddEntriesComponent = class AddEntriesComponent {
             this.entriesService.saveEntries(this.userEntries).subscribe(data => {
                 console.log('Success: ');
                 //this.route.navigate(['/viewEntries']);
-                this.message = "added successfully";
+                this.message = "user entries added successfully";
             }, error => {
                 console.log('Error: ', error);
                 // this.alertService.warning("Invalid Username or Password") ;
@@ -183,9 +183,10 @@ let AddEntriesComponent = class AddEntriesComponent {
         if (this.entriesType === "2") {
             this.entriesService.saveEntriesForFiles(this.currentFileUpload, this.usr.id).subscribe(data => {
                 console.log('Success: ');
-                this.message = "added successfully";
+                this.message = data.message;
             }, error => {
-                console.log('Error: ', error);
+                // console.log('Error: ', error);
+                this.message = "File Exeeded, it stored limit,please upload file less then 1 MB ";
                 // this.alertService.warning("Invalid Username or Password") ;
             });
         }
@@ -368,6 +369,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _edit_edit_component__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./edit/edit.component */ "./src/app/edit/edit.component.ts");
 /* harmony import */ var _auth_guard__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./auth.guard */ "./src/app/auth.guard.ts");
 /* harmony import */ var ngx_alerts__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ngx-alerts */ "./node_modules/ngx-alerts/fesm2015/ngx-alerts.js");
+/* harmony import */ var _angular_common__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! @angular/common */ "./node_modules/@angular/common/fesm2015/common.js");
+
 
 
 
@@ -403,7 +406,7 @@ AppModule = tslib__WEBPACK_IMPORTED_MODULE_0__["__decorate"]([
             ngx_alerts__WEBPACK_IMPORTED_MODULE_14__["AlertModule"].forRoot({ maxMessages: 5, timeout: 5000 }),
             _app_routing_module__WEBPACK_IMPORTED_MODULE_3__["AppRoutingModule"]
         ],
-        providers: [_auth_guard__WEBPACK_IMPORTED_MODULE_13__["AuthGuard"]],
+        providers: [{ provide: _angular_common__WEBPACK_IMPORTED_MODULE_15__["LocationStrategy"], useClass: _angular_common__WEBPACK_IMPORTED_MODULE_15__["HashLocationStrategy"] }, _auth_guard__WEBPACK_IMPORTED_MODULE_13__["AuthGuard"]],
         bootstrap: [_app_component__WEBPACK_IMPORTED_MODULE_4__["AppComponent"]]
     })
 ], AppModule);
@@ -538,7 +541,7 @@ let EditComponent = class EditComponent {
     }
     save() {
         let usrData = localStorage.getItem("userData");
-        console.log("user data in view " + usrData);
+        console.log("user data in view " + usrData + "   " + this.entriesService.editVar);
         this.usr = JSON.parse(usrData);
         this.usersEntriesEdit.userId = this.usr.id;
         this.usersEntriesEdit.id = Number(this.entriesService.editVar);
@@ -558,6 +561,7 @@ let EditComponent = class EditComponent {
                 this.route.navigate(['/viewEntries']);
             }, error => {
                 console.log('Error: ', error);
+                this.message = "File Exeeded, it stored limit,please upload file less then 1 MB ";
                 // this.alertService.warning("Invalid Username or Password") ;
             });
         }
@@ -570,7 +574,6 @@ let EditComponent = class EditComponent {
         this.message = "";
         const file = event.target.files.item(0);
         let filename = file.name;
-        //alert("file type "+file.type );
         if (file.type.match('image/*') || file.type.match('image/jpeg')) {
             var size = event.target.files[0].size;
             this.currentFileUpload = event.target.files[0];
@@ -1067,11 +1070,11 @@ let RegisterGuestComponent = class RegisterGuestComponent {
         this.route.navigate(['']);
     }
     onSubmit() {
-        if (this.user.userName.trim().length > 0 && this.user.password.trim().length > 0) {
+        if (this.user.userName.trim().length > 0 && this.user.password.trim().length > 0 && !(this.user.userRole === undefined)) {
             this.loginService.register(this.user).subscribe(data => {
                 // console.log('Success: ', data);
                 if (data.code === 200)
-                    this.loginService.message = "User registered successfully, pls login ";
+                    this.loginService.message = data.message;
                 else
                     this.loginService.message = "error while registering usr pls try again";
                 this.route.navigate(['']);
@@ -1080,7 +1083,7 @@ let RegisterGuestComponent = class RegisterGuestComponent {
             });
         }
         else {
-            this.message = "incorrect user name and password, pls try again";
+            this.message = "either user name or password or role is empty, pls try again";
         }
     }
     selectChange(event) {

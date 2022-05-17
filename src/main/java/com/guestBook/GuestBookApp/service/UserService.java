@@ -34,6 +34,8 @@ public interface UserService {
 
 	boolean updateFileData(MultipartFile file, int userId, long id)throws IOException;
 
+	boolean findUserByName(String userName);
+
 	//LoginResDTO login(Map<String, String> map);
 
 }

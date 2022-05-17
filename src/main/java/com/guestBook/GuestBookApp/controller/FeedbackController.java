@@ -3,6 +3,7 @@ package com.guestBook.GuestBookApp.controller;
 import java.io.ByteArrayOutputStream;
 import java.util.List;
 
+import org.apache.tomcat.util.http.fileupload.impl.FileSizeLimitExceededException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,13 +48,18 @@ public class FeedbackController {
 		logger.info("registering user");
 		User _user=null;;
 		try {
+			if(userService.findUserByName(user.getUserName()))
+				return new ResponseDataEntity<>("user is alredy registered","user is alredy registered, please use diffrent name", ResponseDetails.SUCCESS);
 			
 			 _user=userService.registerUser(user);
+			 return new ResponseDataEntity<>("User registered successfully, pls login","User registered successfully, pls login", ResponseDetails.SUCCESS);
+				
+			 
 		}catch(Exception e) {
 			logger.error("error while registering user"+e.getStackTrace());
 			return new ResponseDataEntity<>(_user, ResponseDetails.ERROR);
 		}
-		return new ResponseDataEntity<>(_user, ResponseDetails.SUCCESS);
+		//return new ResponseDataEntity<>(_user, ResponseDetails.SUCCESS);
 	}
 	
 	
@@ -256,24 +262,30 @@ public class FeedbackController {
 	@PostMapping("/storeFileData")
 	public ResponseDataEntity<?> storeFile(@RequestParam("file") MultipartFile file,@RequestParam("userId") int userId) {
 		try {
+			System.out.println(" max file size is "+file.getSize());
 			UserEntries userEntries=userService.storeFile(file,userId);
-
 			logger.info("storeFile : success");
 			if (userEntries!=null)
 			return new ResponseDataEntity<>(userEntries.getFilename(),userEntries.getFilename() +"file uploaded successfully", ResponseDetails.SUCCESS);
 			else
 			return new ResponseDataEntity<>(null,"error while file uploadeding", ResponseDetails.ERROR);
-				
-		} catch (Exception e) {
-			logger.error("storeFile : error : {}", e.getMessage());
-			return new ResponseDataEntity<>(null, e.getMessage(), ResponseDetails.ERROR);
-		}
+			}catch (FileSizeLimitExceededException e1) {
+		 logger.error("storeFile : error : {}", e1.getMessage());
+		return new ResponseDataEntity<>(null,"file size exeeded limit uploadeding please upload max 1 mb file", ResponseDetails.SUCCESS);
 
+		}catch (Exception e) {
+			logger.error("storeFile : error : {}", e.getMessage());
+			return new ResponseDataEntity<>(null,"file upload error", ResponseDetails.ERROR);
+
+		}
+		
 	}
 	
 	@PutMapping("/updateStoreFileData")
 	public ResponseDataEntity<?> updateStoreFileData(@RequestParam("file") MultipartFile file,@RequestParam("userId") int userId,@RequestParam("Id") long Id) {
 		try {	
+			
+			logger.info("updateStoreFileData cont  user id in "+userId+" nad id "+Id);
 			logger.info("storeFile : success");
 			if (userService.updateFileData(file,userId,Id))
 			{	
@@ -281,7 +293,10 @@ public class FeedbackController {
 			}else {
 			return new ResponseDataEntity<>(null,"error while file uploadeding", ResponseDetails.ERROR);
 			}
-		} catch (Exception e) {
+			}catch (FileSizeLimitExceededException e1) {
+				 logger.error("storeFile : error : {}", e1.getMessage());
+					return new ResponseDataEntity<>(null,"file size exeeded limit uploadeding please upload max 1 mb file", ResponseDetails.SUCCESS);
+			}catch (Exception e) {
 			logger.error("storeFile : error : {}", e.getMessage());
 			return new ResponseDataEntity<>(null, e.getMessage(), ResponseDetails.ERROR);
 		}

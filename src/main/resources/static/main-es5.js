@@ -175,7 +175,7 @@ var AddEntriesComponent = /** @class */ (function () {
             this.entriesService.saveEntries(this.userEntries).subscribe(function (data) {
                 console.log('Success: ');
                 //this.route.navigate(['/viewEntries']);
-                _this.message = "added successfully";
+                _this.message = "user entries added successfully";
             }, function (error) {
                 console.log('Error: ', error);
                 // this.alertService.warning("Invalid Username or Password") ;
@@ -184,9 +184,10 @@ var AddEntriesComponent = /** @class */ (function () {
         if (this.entriesType === "2") {
             this.entriesService.saveEntriesForFiles(this.currentFileUpload, this.usr.id).subscribe(function (data) {
                 console.log('Success: ');
-                _this.message = "added successfully";
+                _this.message = data.message;
             }, function (error) {
-                console.log('Error: ', error);
+                // console.log('Error: ', error);
+                _this.message = "File Exeeded, it stored limit,please upload file less then 1 MB ";
                 // this.alertService.warning("Invalid Username or Password") ;
             });
         }
@@ -374,6 +375,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _edit_edit_component__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./edit/edit.component */ "./src/app/edit/edit.component.ts");
 /* harmony import */ var _auth_guard__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./auth.guard */ "./src/app/auth.guard.ts");
 /* harmony import */ var ngx_alerts__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ngx-alerts */ "./node_modules/ngx-alerts/fesm2015/ngx-alerts.js");
+/* harmony import */ var _angular_common__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! @angular/common */ "./node_modules/@angular/common/fesm5/common.js");
+
 
 
 
@@ -410,7 +413,7 @@ var AppModule = /** @class */ (function () {
                 ngx_alerts__WEBPACK_IMPORTED_MODULE_14__["AlertModule"].forRoot({ maxMessages: 5, timeout: 5000 }),
                 _app_routing_module__WEBPACK_IMPORTED_MODULE_3__["AppRoutingModule"]
             ],
-            providers: [_auth_guard__WEBPACK_IMPORTED_MODULE_13__["AuthGuard"]],
+            providers: [{ provide: _angular_common__WEBPACK_IMPORTED_MODULE_15__["LocationStrategy"], useClass: _angular_common__WEBPACK_IMPORTED_MODULE_15__["HashLocationStrategy"] }, _auth_guard__WEBPACK_IMPORTED_MODULE_13__["AuthGuard"]],
             bootstrap: [_app_component__WEBPACK_IMPORTED_MODULE_4__["AppComponent"]]
         })
     ], AppModule);
@@ -552,7 +555,7 @@ var EditComponent = /** @class */ (function () {
     EditComponent.prototype.save = function () {
         var _this = this;
         var usrData = localStorage.getItem("userData");
-        console.log("user data in view " + usrData);
+        console.log("user data in view " + usrData + "   " + this.entriesService.editVar);
         this.usr = JSON.parse(usrData);
         this.usersEntriesEdit.userId = this.usr.id;
         this.usersEntriesEdit.id = Number(this.entriesService.editVar);
@@ -572,6 +575,7 @@ var EditComponent = /** @class */ (function () {
                 _this.route.navigate(['/viewEntries']);
             }, function (error) {
                 console.log('Error: ', error);
+                _this.message = "File Exeeded, it stored limit,please upload file less then 1 MB ";
                 // this.alertService.warning("Invalid Username or Password") ;
             });
         }
@@ -584,7 +588,6 @@ var EditComponent = /** @class */ (function () {
         this.message = "";
         var file = event.target.files.item(0);
         var filename = file.name;
-        //alert("file type "+file.type );
         if (file.type.match('image/*') || file.type.match('image/jpeg')) {
             var size = event.target.files[0].size;
             this.currentFileUpload = event.target.files[0];
@@ -1105,11 +1108,11 @@ var RegisterGuestComponent = /** @class */ (function () {
     };
     RegisterGuestComponent.prototype.onSubmit = function () {
         var _this = this;
-        if (this.user.userName.trim().length > 0 && this.user.password.trim().length > 0) {
+        if (this.user.userName.trim().length > 0 && this.user.password.trim().length > 0 && !(this.user.userRole === undefined)) {
             this.loginService.register(this.user).subscribe(function (data) {
                 // console.log('Success: ', data);
                 if (data.code === 200)
-                    _this.loginService.message = "User registered successfully, pls login ";
+                    _this.loginService.message = data.message;
                 else
                     _this.loginService.message = "error while registering usr pls try again";
                 _this.route.navigate(['']);
@@ -1118,7 +1121,7 @@ var RegisterGuestComponent = /** @class */ (function () {
             });
         }
         else {
-            this.message = "incorrect user name and password, pls try again";
+            this.message = "either user name or password or role is empty, pls try again";
         }
     };
     RegisterGuestComponent.prototype.selectChange = function (event) {

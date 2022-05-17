@@ -201,22 +201,39 @@ public class UserServiceImpl implements UserDetailsService, UserService {
 
 	@Override
 	public boolean updateFileData(MultipartFile file, int userId, long Id)throws IOException {
+		logger.info(" updateFileData id "+Id);
 		java.util.Optional<UserEntries> opt=userEntriesRepository.findById(Id);
 		UserEntries _userEntries=null;
 		boolean status=false;
 		if(opt.isPresent())
 		{
+			
 			_userEntries=opt.get();
+			logger.info("updating entried for"+_userEntries.getId() );
 			_userEntries.setFeedback("");
+			try {
+				
 			_userEntries.setFilename(file.getName());
 			_userEntries.setFiletype(file.getContentType());
 			_userEntries.setFiledata(file.getBytes());
 			_userEntries.setImgurl(file.getName());
 			userEntriesRepository.save(_userEntries);
+			}catch (Exception e){
+				logger.info("error :"+e.getMessage());
+			}
 			status=true;
 			 
 		}
+		
 		return status;
 
 }
+
+	@Override
+	public boolean findUserByName(String userName) {
+		if(userRepository.findByUsername(userName)!=null)
+		return true;
+		else 
+			return false;
+	}
 }
