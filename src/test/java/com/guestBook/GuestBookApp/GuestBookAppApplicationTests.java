@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.guestBook.GuestBookApp.model.User;
 import com.guestBook.GuestBookApp.model.UserEntries;
@@ -25,46 +26,54 @@ class GuestBookAppApplicationTests {
 	
 	@Autowired
 	UserEntriesRepository userEntriesRepo;
-	
+	@Autowired
+	private PasswordEncoder userPasswordEncoder;
 	
 	
 	@Test
 	@Order(1)
 	public void testRegister() {
+		User user1=userRepo.findByUsername("testUser");
+		if(userPasswordEncoder.matches("testUser", user1.getPassword()))
+		userRepo.delete(user1);
+		
 		User user=new User();
 		user.setId(4L);
 		user.setUserName("testUser");
-		user.setPassword("testUser");
-		//user.setUserRole("user");
+		user.setPassword(userPasswordEncoder.encode("testUser"));
+		user.setUserRole("user");
 		userRepo.save(user);
-		assertNotNull(userRepo.findByUsernamePassword("testUser", "testUser"));
+		assertTrue(userPasswordEncoder.matches("testUser", user.getPassword()));
 		
 	}
 	
 	@Test
 	@Order(2)
 	public void testlogin() {
-		assertEquals("testUser", userRepo.findByUsernamePassword("testUser", "testUser").getUserName());
+		User user=userRepo.findByUsername("testUser");
+		assertTrue(userPasswordEncoder.matches("testUser", user.getPassword()));
 		
 	}
 	
-	@Test
+	/*@Test
 	@Order(3)
 	public void testDelete() {
-		User user=userRepo.findByUsernamePassword("testUser", "testUser");
+		User user=userRepo.findByUsername("testUser");
+		if(userPasswordEncoder.matches("testUser", user.getPassword()))
 		userRepo.delete(user);
-		assertTrue(userRepo.findByUsernamePassword("testUser", "testUser")==null);
+		assertTrue(userRepo.findByUsername("testUser")==null);
 		
-	}
+	}*/
 	
 	@Test
 	@Order(4)
 	public void testCreteEntry() {
 		UserEntries userEntries=new UserEntries();
 		userEntries.setFeedback("testing");
-		userEntries.setImgurl("testFile");
+		//userEntries.setImgurl("testFile");
 		userEntries.setIsApprove(0);
 		userEntries.setIsdeleted(0);
+		userEntries.setUserId(1);
 		userEntriesRepo.save(userEntries);
 		assertNotNull(userEntriesRepo.getEntriesList());
 		
@@ -75,9 +84,10 @@ class GuestBookAppApplicationTests {
 	public void testEditEntry() {
 		UserEntries userEntries=new UserEntries();
 		userEntries.setFeedback("testing");
-		userEntries.setImgurl("testFile");
+		//userEntries.setImgurl("testFile");
 		userEntries.setIsApprove(0);
 		userEntries.setIsdeleted(0);
+		userEntries.setUserId(1);
 		userEntriesRepo.save(userEntries);
 		assertNotNull(userEntriesRepo.getEntriesList());
 		
